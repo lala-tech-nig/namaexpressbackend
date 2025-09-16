@@ -26,7 +26,7 @@ mongoose
 app.post("/api/orders", async (req, res) => {
   try {
     const order = await Order.create(req.body);
-    console.log("✅ New order saved:", order.id);
+    console.log("✅ New order saved with receipt image:", order.id);
     res.json({ success: true, id: order.id });
   } catch (err) {
     console.error("❌ Error saving order:", err.message);

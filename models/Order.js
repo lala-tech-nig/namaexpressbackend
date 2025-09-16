@@ -11,7 +11,12 @@ const OrderSchema = new mongoose.Schema(
     id: { type: String, required: true, unique: true }, // frontend-generated order id
     items: [ItemSchema],
     total: { type: Number, required: true },
-    status: { type: String, enum: ["pending", "completed"], default: "pending" }
+    status: { 
+      type: String, 
+      enum: ["pending", "completed", "Sold"], 
+      default: "Sold" 
+    },
+    receiptImage: { type: String } // base64 string or external URL (e.g. Cloudinary)
   },
   { timestamps: true }
 );
