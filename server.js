@@ -4,6 +4,7 @@ import bodyParser from "body-parser";
 import mongoose from "mongoose";
 import dotenv from "dotenv";
 import Order from "./models/Order.js";
+import SalesSummary from "./models/SalesSummary.js";
 
 dotenv.config();
 const app = express();
@@ -18,6 +19,8 @@ mongoose
   .connect(process.env.MONGO_URI)
   .then(() => console.log("✅ MongoDB connected"))
   .catch((err) => console.error("❌ MongoDB error:", err));
+
+// ------------------- ORDER ROUTES -------------------
 
 // POST new order
 app.post("/api/orders", async (req, res) => {
@@ -41,7 +44,42 @@ app.get("/api/orders", async (req, res) => {
   }
 });
 
-// Root test
+// ------------------- SALES SUMMARY ROUTES -------------------
+
+// POST daily sales summary
+app.post("/api/sales-summary", async (req, res) => {
+  try {
+    const { date, sales, totalAmount } = req.body;
+    if (!date || sales == null || totalAmount == null) {
+      return res.status(400).json({ success: false, error: "Missing fields" });
+    }
+
+    // Upsert summary for the date
+    const summary = await SalesSummary.findOneAndUpdate(
+      { date },
+      { sales, totalAmount },
+      { new: true, upsert: true }
+    );
+
+    console.log("✅ Sales summary saved:", summary.date);
+    res.json({ success: true, summary });
+  } catch (err) {
+    console.error("❌ Error saving sales summary:", err.message);
+    res.status(400).json({ success: false, error: err.message });
+  }
+});
+
+// GET all sales summaries
+app.get("/api/sales-summary", async (req, res) => {
+  try {
+    const summaries = await SalesSummary.find().sort({ date: -1 });
+    res.json(summaries);
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// ------------------- ROOT -------------------
 app.get("/", (req, res) => {
   res.send("POS Backend API with MongoDB is running...");
 });
